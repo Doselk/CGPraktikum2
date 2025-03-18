@@ -12,21 +12,35 @@
 #include <math.h>
 
 
-Camera::Camera( float zvalue, float planedist, float width, float height, unsigned int widthInPixel, unsigned int heightInPixel )
+Camera::Camera(float zvalue, float planedist, float width, float height, unsigned int widthInPixel, unsigned int heightInPixel)
+	:z(zvalue),
+	planedist(planedist),
+	width(width),
+	height(height),
+	widthInPixel(widthInPixel),
+	heightInPixel(heightInPixel)
 {
-	// TODO: Add your code
+	
 }
 
 Vector Camera::generateRay( unsigned int x, unsigned int y) const
 {
-	// TODO: Add your code
-    return Vector(); // dummy (remove)
+	// vier punkte , die die ecken des bildschirms darstellen
+	// wir haben zwei punkte und machen darauas einen 2d vector mit den vier fällen dann wahrscheinlich
+
+	// wir ziehen den punkt des bildes von der camerea position z ab und wir verschieben diesen neuen vektor an die spitze für den richtungsvektor
+	// wir müssen aber beachten das wir nicht nur z sonder auch planeDist berücksichtugen um richtig anzukommen
+
+	Vector ray =  (Vector(x, y, z-planedist) - Position()).normalize();
+
+
+	return ray;
 }
 
 Vector Camera::Position() const
 {
-	// TODO: Add your code
-	return Vector(); // dummy (remove)
+	// position von der kamera soll mittig sein, gegeben ist nur die z-koordinate (tiefe). X ist die breite und y die höhe
+	return Vector(0, 0, z); 
 }
 
 SimpleRayTracer::SimpleRayTracer(unsigned int MaxDepth)

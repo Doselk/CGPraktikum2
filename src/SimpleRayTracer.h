@@ -16,6 +16,13 @@ class RGBImage;
 class Camera
 {
 public:
+	float z;    
+	float planedist;
+	float width;
+	float height;
+	unsigned int widthInPixel;
+	unsigned int heightInPixel;
+
     Camera( float zvalue, float planedist, float width, float height, unsigned int widthInPixel, unsigned int heightInPixel );
     Vector generateRay( unsigned int x, unsigned int y) const;
     Vector Position() const;
