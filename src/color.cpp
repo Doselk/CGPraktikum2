@@ -3,34 +3,44 @@
 
 Color::Color()
 {
-  // TODO: add your code
+    // Nichts
 }
 
-Color::Color( float r, float g, float b)
+Color::Color(float r, float g, float b)
 {
-	// TODO: add your code
+    this->R = r;
+    this->G = g;
+    this->B = b;
 }
 
 Color Color::operator*(const Color& c) const
 {
-	// TODO: add your code
-    return Color(); // dummy (remove)
+    float neuR = this->R * c.R;
+    float neuG = this->G * c.G;
+    float neuB = this->B * c.B;
+    return Color(neuR, neuG, neuB);
 }
 
 Color Color::operator*(const float Factor) const
 {
-	// TODO: add your code
-	return Color(); // dummy (remove)
+    float neuR = this->R * Factor;
+    float neuG = this->G * Factor;
+    float neuB = this->B * Factor;
+    return Color(neuR, neuG, neuB);
 }
 
 Color Color::operator+(const Color& c) const
 {
-	// TODO: add your code
-	return Color(); // dummy (remove)
+    float neuR = this->R + c.R;
+    float neuG = this->G + c.G;
+    float neuB = this->B + c.B;
+    return Color(neuR, neuG, neuB);
 }
 
 Color& Color::operator+=(const Color& c)
 {
-	// TODO: add your code
-	return *this; // dummy (remove)
+    this->R = this->R + c.R;
+    this->G = this->G + c.G;
+    this->B = this->B + c.B;
+    return *this;
 }
