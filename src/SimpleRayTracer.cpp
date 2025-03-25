@@ -13,7 +13,7 @@
 
 
 Camera::Camera(float zvalue, float planedist, float width, float height, unsigned int widthInPixel, unsigned int heightInPixel)
-	:z(zvalue),
+	:zvalue(zvalue),
 	planedist(planedist),
 	width(width),
 	height(height),
@@ -40,7 +40,7 @@ Vector Camera::generateRay( unsigned int x, unsigned int y) const
 Vector Camera::Position() const
 {
 	// position von der kamera soll mittig sein, gegeben ist nur die z-koordinate (tiefe). X ist die breite und y die höhe
-	return Vector(0, 0, z); 
+	return Vector(0, 0, zvalue); 
 }
 
 SimpleRayTracer::SimpleRayTracer(unsigned int MaxDepth):maxDepth(MaxDepth){}
