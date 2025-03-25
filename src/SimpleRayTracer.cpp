@@ -31,7 +31,7 @@ Vector Camera::generateRay( unsigned int x, unsigned int y) const
 	// wir ziehen den punkt des bildes von der camerea position z ab und wir verschieben diesen neuen vektor an die spitze für den richtungsvektor
 	// wir müssen aber beachten das wir nicht nur z sonder auch planeDist berücksichtugen um richtig anzukommen
 
-	Vector ray =  (Vector(x, y, z-planedist) - Position()).normalize();
+	Vector ray =  Vector(x, y, planedist).normalize();
 
 
 	return ray;
@@ -68,17 +68,17 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
         Vector A = SceneModel.getTriangle(i).A;
         Vector B = SceneModel.getTriangle(i).B;
         Vector C = SceneModel.getTriangle(i).C;
+        
         float s;
         
-        if (o.triangleIntersection(d, A, B, C, s)) {
-            if (depth > 0) {
-                depth--;
-                trace(SceneModel, o, d, depth);
-            } else {
+        if (o.triangleIntersection(d, A, B, C, s) && s > 0) {
+            //if (depth > 0) {
+            //    depth--;
+            //    return trace(SceneModel, o, d, depth);
+            //} else {
                 return Color(0.3,0.3,0.3);
-            }
+            //}
         }
-        
     }
     
 	return Color(0,0,0); // wenn wir nichts treffen
