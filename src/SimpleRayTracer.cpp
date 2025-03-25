@@ -43,26 +43,44 @@ Vector Camera::Position() const
 	return Vector(0, 0, z); 
 }
 
-SimpleRayTracer::SimpleRayTracer(unsigned int MaxDepth)
-{
-	// TODO: Add your code
-}
+SimpleRayTracer::SimpleRayTracer(unsigned int MaxDepth):maxDepth(MaxDepth){}
 
 
 void SimpleRayTracer::traceScene( const Scene& SceneModel, RGBImage& Image)
 {
-	// TODO: Add your code
+    Camera cam = Camera(8, 1, 1, 0.75, 640, 480);
+    for (int w = 0; w<Image.width(); w++) {
+        for (int h = 0; h<Image.height(); h++) {
+            Color c = trace(SceneModel, cam.Position(), cam.generateRay(w, h), maxDepth);
+            Image.setPixelColor(w, h, c);
+        }
+    }
 }
 
 Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& Eye, const Vector& N, const PointLight& Light, const Material& Mtrl )
 {
-	// TODO: Add your code
-	return Color(); // dummy (remove)
+    return Mtrl.getDiffuseCoeff(Surface);
 }
 
 Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Vector& d, int depth)
 {
-	// TODO: Add your code
-	return Color(); // dummy (remove)
+    for (int i = 0 ; i<SceneModel.getTriangleCount(); i++) {
+        Vector A = SceneModel.getTriangle(i).A;
+        Vector B = SceneModel.getTriangle(i).B;
+        Vector C = SceneModel.getTriangle(i).C;
+        float s;
+        
+        if (o.triangleIntersection(d, A, B, C, s)) {
+            if (depth > 0) {
+                depth--;
+                trace(SceneModel, o, d, depth);
+            } else {
+                return Color(0.3,0.3,0.3);
+            }
+        }
+        
+    }
+    
+	return Color(0,0,0); // wenn wir nichts treffen
 }
 

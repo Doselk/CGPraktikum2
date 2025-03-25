@@ -31,6 +31,7 @@ public:
 class SimpleRayTracer
 {
 public:
+    unsigned int maxDepth;
     SimpleRayTracer(unsigned int MaxDepth);
     void traceScene( const Scene& SceneModel, RGBImage& Image);
 protected:
