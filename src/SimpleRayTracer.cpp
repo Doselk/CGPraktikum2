@@ -42,7 +42,7 @@ Vector Camera::generateRay( unsigned int x, unsigned int y) const
 
     // 3. Berechnung des Punkts auf der Bildebene in Weltkoordinaten
     // Da die Kamera entlang der Z-Achse blickt, liegt die Bildebene bei z + planedist
-    Vector pointOnPlane(worldX, worldY, zvalue + planedist);
+    Vector pointOnPlane(worldX, worldY, -zvalue + planedist);
 
     // 4. Berechnung des Richtungsvektors vom Augpunkt zum Punkt auf der Bildebene
     Vector direction = pointOnPlane - Position();
@@ -56,7 +56,7 @@ Vector Camera::generateRay( unsigned int x, unsigned int y) const
 Vector Camera::Position() const
 {
 	// position von der kamera soll mittig sein, gegeben ist nur die z-koordinate (tiefe). X ist die breite und y die höhe
-	return Vector(0, 0, zvalue); 
+	return Vector(0, 0, -zvalue); 
 }
 
 SimpleRayTracer::SimpleRayTracer(unsigned int MaxDepth):maxDepth(MaxDepth){}
@@ -80,23 +80,71 @@ Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& E
 
 Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Vector& d, int depth)
 {
-    for (int i = 0 ; i<SceneModel.getTriangleCount(); i++) {
-        Vector A = SceneModel.getTriangle(i).A;
-        Vector B = SceneModel.getTriangle(i).B;
-        Vector C = SceneModel.getTriangle(i).C;
-        
-        float s;
-        
-        if (o.triangleIntersection(d, A, B, C, s) && s > 0) {
-            //if (depth > 0) {
-            //    depth--;
-            //    return trace(SceneModel, o, d, depth);
-            //} else {
-                return Color(0.3,0.3,0.3);
-            //}
+    // 1. Suche das nächste Dreieck, das der Strahl trifft
+
+    // Korrekte Suche nach dem nächstgelegenen Dreieck
+    // 
+    // 
+    // durch all durchiterieren
+    // triangle 1 speichern
+    // ist triangle n näher als triangle n-1?
+    // 
+    // Vermeidung von Selbst - Kollisionen(indem man minimale Entfernung festlegt)
+
+	int trinagleCount = SceneModel.getTriangleCount();
+
+	Vector nearestTriangleIntersection = Vector(0, 0, 0);
+	int nearestTriangleIndex = -1;
+	float nearestTriangleDistance = INFINITY;
+
+    const Triangle* nearestTriangle = nullptr;
+
+    for (size_t i = 0; i < trinagleCount; i++)
+    {
+		const Triangle &currentTriangle = SceneModel.getTriangle(i);
+        float s = -1;
+
+        if (o.triangleIntersection(d, currentTriangle.A, currentTriangle.B, currentTriangle.C, s)) {
+			
+
+            if (s < nearestTriangleDistance) {
+				nearestTriangleDistance = s;
+				nearestTriangleIntersection = o + (d * s);
+
+				nearestTriangleIndex = i;
+                nearestTriangle = &(SceneModel.getTriangle(i));
+            }
+
         }
+
     }
+
+    if (nearestTriangle == nullptr)
+    {
+		return Color(0, 0, 0);
+    }
+
+	return nearestTriangle->pMtrl->getDiffuseCoeff(nearestTriangleIntersection);
+
+
     
-	return Color(0,0,0); // wenn wir nichts treffen
+    // 2. Wenn kein Dreieck getroffen wird, gib eine Hintergrundfarbe zurück
+
+	
+    
+    // 3. Berechne die lokale Beleuchtung am Treffpunkt(mit localIllumination)
+    
+    // 4. Falls Reflexion nötig ist und die Rekursionstiefe > 0:
+    
+        // Berechne den reflektierten Strahl
+        
+        // Rufe trace() für diesen Strahl rekursiv auf
+        
+        // Kombiniere die reflektierte Farbe mit der lokalen Beleuchtung
+        
+    // 5. Gib die resultierende Farbe zurück
+
+    
+	
 }
 
