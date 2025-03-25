@@ -25,16 +25,32 @@ Camera::Camera(float zvalue, float planedist, float width, float height, unsigne
 
 Vector Camera::generateRay( unsigned int x, unsigned int y) const
 {
-	// vier punkte , die die ecken des bildschirms darstellen
-	// wir haben zwei punkte und machen darauas einen 2d vector mit den vier fällen dann wahrscheinlich
+    // 1. Umrechnung von Pixelkoordinaten in normalisierte Gerätekoordinaten (-1 bis 1)
+    /*
+		mit ndc koordinaten wandlen wir die pixelkoordinaten in eine einheitliche koordinate um, die von -1 bis 1 geht
+        https://www.mebuyukbulut.com/cg/normalized-device-coordinate-ndc/2022/#:~:text=Normalized%20device%20coordinate%20or%20NDC,that%20defines%20the%20view%20volume.
 
-	// wir ziehen den punkt des bildes von der camerea position z ab und wir verschieben diesen neuen vektor an die spitze für den richtungsvektor
-	// wir müssen aber beachten das wir nicht nur z sonder auch planeDist berücksichtugen um richtig anzukommen
+		die berechnung der ndc Koordinaten haben wir folgender Seite entnommen:
+        https://www.scratchapixel.com/lessons/3d-basic-rendering/ray-tracing-generating-camera-rays/generating-camera-rays.html
+    */
+    float ndcX = (2.0f * x / (float)widthInPixel) - 1.0f;  // -1 (links) bis 1 (rechts)
+    float ndcY = 1.0f - (2.0f * y / (float)heightInPixel); // 1 (oben) bis -1 (unten)
 
-	Vector ray =  Vector(x, y, planedist).normalize();
+    // 2. Skalierung auf die physische Größe der Bildebene
+    float worldX = ndcX * (width / 2.0f);
+    float worldY = ndcY * (height / 2.0f);
 
+    // 3. Berechnung des Punkts auf der Bildebene in Weltkoordinaten
+    // Da die Kamera entlang der Z-Achse blickt, liegt die Bildebene bei z + planedist
+    Vector pointOnPlane(worldX, worldY, zvalue + planedist);
 
-	return ray;
+    // 4. Berechnung des Richtungsvektors vom Augpunkt zum Punkt auf der Bildebene
+    Vector direction = pointOnPlane - Position();
+
+    // 5. Normalisierung des Richtungsvektors
+    direction.normalize();
+
+    return direction;
 }
 
 Vector Camera::Position() const

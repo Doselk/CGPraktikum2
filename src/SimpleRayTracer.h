@@ -16,7 +16,7 @@ class RGBImage;
 class Camera
 {
 public:
-	float z;    
+	float zvalue;    
 	float planedist;
 	float width;
 	float height;
