@@ -95,9 +95,12 @@ Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& E
 	// Spekular Komponente
 	Color specular = Mtrl.getSpecularCoeff(Surface) * Light.Intensity * pow(fmax(0, R.dot(V)), Mtrl.getSpecularExp(Surface));
 
+	// ambiente beleuchtung
+	Color ambient = Mtrl.getAmbientCoeff(Surface) * Light.Intensity;
 
 
-    return diffuse;
+
+    return diffuse+specular+ambient;
 }
 
 
@@ -133,8 +136,8 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 		// schnittpunkt berechnen wenn es einen gibt
         if (o.triangleIntersection(d, currentTriangle.A, currentTriangle.B, currentTriangle.C, s)) {
 			
-			// Wenn der Schnittpunkt näher ist als der bisherige, speichere ihn
-            if (s < nearestTriangleDistance) {
+			// Wenn der Schnittpunkt näher ist als der bisherige, speichere ihn + selfkollision vermeiden
+            if (s < nearestTriangleDistance && s > 0.0001) {
 				nearestTriangleDistance = s;
 				nearestTriangleIntersection = o + (d * s);
 
@@ -155,15 +158,50 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 
     Color triangleSurface = nearestTriangle->pMtrl->getDiffuseCoeff(nearestTriangleIntersection);
 
+    // Beleuchtungsmodell
+
+	int lightCount = SceneModel.getLightCount();
+	Color color = Color(0, 0, 0);
+
     // surface = schnittpunkt
-	// eye = kamera
-	// normal = normale
-	// light = lichtquelle
+    // eye = kamera
+    // normal = normale
+    // light = lichtquelle
     // material = material
 
-	//todo:  - variable umbenennen
+    //todo:  - variable umbenennen
 
-	Color color = localIllumination(nearestTriangleIntersection, o, nearestTriangle->calcNormal(nearestTriangleIntersection), SceneModel.getLight(0), *nearestTriangle->pMtrl);
+    for (size_t i = 0; i<lightCount; i++)
+    {
+        color += localIllumination(nearestTriangleIntersection, o, nearestTriangle->calcNormal(nearestTriangleIntersection), SceneModel.getLight(i), *nearestTriangle->pMtrl);
+    }
+
+    // rekursion
+	if (depth > 0)
+	{
+		// refelktionskoeffizient
+		float reflecivity = nearestTriangle->pMtrl->getReflectivity(nearestTriangleIntersection);
+
+        if (reflecivity > 0)
+        {
+            // Berechne reflektierten Strahl
+            Vector normal = nearestTriangle->calcNormal(nearestTriangleIntersection);
+            Vector reflectedDir = d.reflection(normal);
+
+            // 3. Rufe trace rekursiv auf (mit einer kleinen Verschiebung des Startpunkts)
+            Color reflectedColor = trace(SceneModel,
+                nearestTriangleIntersection + reflectedDir * 0.001f,
+                reflectedDir,
+                depth - 1);
+
+            // 4. Kombiniere mit vorhandener Farbe
+            color += reflectedColor * reflecivity;
+
+        }
+
+	}
+   
+
 
 	return color;
 
