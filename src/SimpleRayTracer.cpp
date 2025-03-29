@@ -87,7 +87,7 @@ Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& E
 	V.normalize();
 
 	// 3. Berechnung des Reflektionsvektors
-	Vector R = N * 2 * N.dot(L) - L;
+	Vector R = N * 2 * (N.dot(L)) - L;
 
 	// Diffuse Komponente
 	Color diffuse = Mtrl.getDiffuseCoeff(Surface) * Light.Intensity * fmax(0, N.dot(L));
@@ -100,7 +100,7 @@ Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& E
 
 
 
-    return diffuse+specular+ambient;
+    return diffuse+specular;
 }
 
 
@@ -127,6 +127,7 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 
     const Triangle* nearestTriangle = nullptr;
 
+    // einfach int nutzen dann brauche ich auch kein size_t
     for (size_t i = 0; i < trinagleCount; i++)
     {
 		const Triangle &currentTriangle = SceneModel.getTriangle(i);
@@ -134,7 +135,10 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 
 
 		// schnittpunkt berechnen wenn es einen gibt
-        if (o.triangleIntersection(d, currentTriangle.A, currentTriangle.B, currentTriangle.C, s)) {
+        if (o.triangleIntersection(d, 
+            currentTriangle.A, 
+            currentTriangle.B, 
+            currentTriangle.C, s)) {
 			
 			// Wenn der Schnittpunkt näher ist als der bisherige, speichere ihn + selfkollision vermeiden
             if (s < nearestTriangleDistance && s > 0.0001) {
@@ -163,20 +167,61 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 	int lightCount = SceneModel.getLightCount();
 	Color color = Color(0, 0, 0);
 
-    // surface = schnittpunkt
-    // eye = kamera
-    // normal = normale
-    // light = lichtquelle
-    // material = material
+
 
     //todo:  - variable umbenennen
 
-    for (size_t i = 0; i<lightCount; i++)
-    {
-        color += localIllumination(nearestTriangleIntersection, o, nearestTriangle->calcNormal(nearestTriangleIntersection), SceneModel.getLight(i), *nearestTriangle->pMtrl);
+    // schatten idee:
+	// ich gucke bei jedem dreieck in welche richtung es zum licht zeigt
+    // wenn ich auf dem weg zur Lichtqulle was treffe dann muss das dreieck im schatten sein
+
+    for (size_t i = 0; i < lightCount; i++) {
+        // Prüfe, ob Punkt im Schatten liegt
+        Vector lightDir = SceneModel.getLight(i).Position - nearestTriangleIntersection;
+        lightDir.normalize();
+
+        bool isInShadow = false;
+
+        // von oberfläche zu licht + epsilon (warum habe ich daraus keine var gemacht...)
+        Vector shadowRayOrigin = nearestTriangleIntersection + lightDir * 0.001f;
+
+		// treffe ich etwas bevor ich das licht treffe?
+        for (int j = 0; j < SceneModel.getTriangleCount(); j++) {
+            
+            const Triangle& currentTriangle = SceneModel.getTriangle(i);
+            float s = -1;
+
+			// intersection mit anderen objekten oder mit kamera
+            if (shadowRayOrigin.triangleIntersection(lightDir,
+				currentTriangle.A,
+                currentTriangle.B,
+                currentTriangle.C, s)) {
+                
+                float distanceToLight = (SceneModel.getLight(i).Position - shadowRayOrigin).length();
+
+				// denk an den selfkol!!
+                if (s > 0.001f && s < distanceToLight) {
+                    isInShadow = true;
+                    break;
+                }
+            }
+        }
+
+        // surface = schnittpunkt
+        // eye = kamera
+        // normal = normale
+        // light = lichtquelle
+        // material = material
+
+        // Nur wenn nicht im Schatten, füge Beleuchtung hinzu
+        if (!isInShadow) {
+            color += localIllumination(nearestTriangleIntersection,o,nearestTriangle->calcNormal(nearestTriangleIntersection),SceneModel.getLight(i),*nearestTriangle->pMtrl);
+        }
     }
 
-    // rekursion
+    // ich muss zuerst gucken ob die oberfläche reflektiert
+    // dann gucke ich wie die reflexion aussehen würde 
+    // mit der neuen richtung kann ich in die trace funktion reingehen
 	if (depth > 0)
 	{
 		// refelktionskoeffizient
@@ -184,17 +229,14 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 
         if (reflecivity > 0)
         {
-            // Berechne reflektierten Strahl
+            // strah reflektieren
             Vector normal = nearestTriangle->calcNormal(nearestTriangleIntersection);
             Vector reflectedDir = d.reflection(normal);
 
-            // 3. Rufe trace rekursiv auf (mit einer kleinen Verschiebung des Startpunkts)
-            Color reflectedColor = trace(SceneModel,
-                nearestTriangleIntersection + reflectedDir * 0.001f,
-                reflectedDir,
-                depth - 1);
+            // jetzt wieder in die trace und farbe holen
+            Color reflectedColor = trace(SceneModel, nearestTriangleIntersection + reflectedDir * 0.01f, reflectedDir, depth - 1);
 
-            // 4. Kombiniere mit vorhandener Farbe
+			// jetzt die neue farbe mal den reflectionswert und auf die neue farbe addieren
             color += reflectedColor * reflecivity;
 
         }

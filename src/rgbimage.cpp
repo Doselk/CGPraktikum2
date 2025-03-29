@@ -35,13 +35,18 @@ unsigned int RGBImage::height() const
 
 unsigned char RGBImage::convertColorChannel(float v)
 {
-    float floatFarbkanal = v * 255;
-    if (floatFarbkanal < 0) {
-        floatFarbkanal = 0.0f;
+    char erg = NULL;
+    if (v > 0.0f && v < 1.0f) {
+        erg = v * 255;
     }
-    return floatFarbkanal;
+    else if (v <= 0.0f) {
+        erg = 0;
+    }
+    else if (v >= 1.0f) {
+        erg = 255;
+    }
+    return erg;
 }
-
 
 bool RGBImage::saveToDisk(const char* Filename)
 {
