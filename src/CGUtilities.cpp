@@ -115,6 +115,8 @@ Material Material::BlueMtrl( Color(0.2f, 0.2f, 0.8f), Color(0.3f,0.3f,0.3f), Col
 Material Material::YellowMtrl( Color(0.8f, 0.8f, 0.2f), Color(0.3f,0.3f,0.3f), Color(0.0,0.0f,0.0f), 16, 0.3f);
 Material Material::CyanMtrl( Color(0.2f, 0.8f, 0.8f), Color(0.3f,0.3f,0.3f), Color(0.0f,0.0f,0.0f), 16, 0.3f);
 
+Material Material::CyanMtrl(Color(0.2f, 0.8f, 0.8f), Color(0.3f, 0.3f, 0.3f), Color(0.0f, 0.0f, 0.0f), 16, 0.3f, );
+
 
 Material::Material()
 {
@@ -125,6 +127,10 @@ Material::Material()
     
 }
 
+Material::Material(const float& Transmissive) {
+    m_TransmissiveIndex = Transmissive;
+}
+
 Material::Material(const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp, float Reflectivity)
 {
     m_DiffuseCoeff = Diffuse;
@@ -132,6 +138,16 @@ Material::Material(const Color& Diffuse, const Color& Specular, const Color& Amb
     m_AmbientCoeff = Ambient;
     m_SpecularExp = SpecularExp;
     m_Reflectivity = Reflectivity;
+}
+
+Material::Material(const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp, float Reflectivity, const float& Transmissive)
+{
+    m_DiffuseCoeff = Diffuse;
+    m_SpecularCoeff = Specular;
+    m_AmbientCoeff = Ambient;
+    m_SpecularExp = SpecularExp;
+    m_Reflectivity = Reflectivity;
+	m_TransmissiveIndex = Transmissive;
 }
 
 float Material::getReflectivity(const Vector& Pos) const
