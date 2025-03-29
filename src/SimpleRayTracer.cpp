@@ -188,7 +188,7 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 		// treffe ich etwas bevor ich das licht treffe?
         for (int j = 0; j < SceneModel.getTriangleCount(); j++) {
             
-            const Triangle& currentTriangle = SceneModel.getTriangle(i);
+            const Triangle& currentTriangle = SceneModel.getTriangle(j);
             float s = -1;
 
 			// intersection mit anderen objekten oder mit kamera
@@ -242,6 +242,10 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
         }
 
 	}
+
+    // ambiente
+    color += nearestTriangle->pMtrl->getAmbientCoeff(nearestTriangleIntersection);
+ 
    
 
 
