@@ -75,9 +75,34 @@ void SimpleRayTracer::traceScene( const Scene& SceneModel, RGBImage& Image)
 
 Color SimpleRayTracer::localIllumination( const Vector& Surface, const Vector& Eye, const Vector& N, const PointLight& Light, const Material& Mtrl )
 {
-    return Mtrl.getDiffuseCoeff(Surface);
+
+	// phong reflection model
+
+	// 1. Berechnung des Vektors zum Licht
+    Vector L = Light.Position - Surface;
+	L.normalize();
+
+	// 2. Berechnung des Vektors zur Kamera
+	Vector V = Eye - Surface;
+	V.normalize();
+
+	// 3. Berechnung des Reflektionsvektors
+	Vector R = N * 2 * N.dot(L) - L;
+
+	// Diffuse Komponente
+	Color diffuse = Mtrl.getDiffuseCoeff(Surface) * Light.Intensity * fmax(0, N.dot(L));
+
+	// Spekular Komponente
+	Color specular = Mtrl.getSpecularCoeff(Surface) * Light.Intensity * pow(fmax(0, R.dot(V)), Mtrl.getSpecularExp(Surface));
+
+
+
+    return diffuse;
 }
 
+
+// todo:    - epsilon bei if
+//          - nearestTri nullptr
 Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Vector& d, int depth)
 {
     // 1. Suche das nächste Dreieck, das der Strahl trifft
@@ -104,9 +129,11 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 		const Triangle &currentTriangle = SceneModel.getTriangle(i);
         float s = -1;
 
+
+		// schnittpunkt berechnen wenn es einen gibt
         if (o.triangleIntersection(d, currentTriangle.A, currentTriangle.B, currentTriangle.C, s)) {
 			
-
+			// Wenn der Schnittpunkt näher ist als der bisherige, speichere ihn
             if (s < nearestTriangleDistance) {
 				nearestTriangleDistance = s;
 				nearestTriangleIntersection = o + (d * s);
@@ -119,32 +146,27 @@ Color SimpleRayTracer::trace( const Scene& SceneModel, const Vector& o, const Ve
 
     }
 
+    // 2. Wenn kein Dreieck getroffen wird, gib eine Hintergrundfarbe zurück
+
     if (nearestTriangle == nullptr)
     {
 		return Color(0, 0, 0);
     }
 
-	return nearestTriangle->pMtrl->getDiffuseCoeff(nearestTriangleIntersection);
+    Color triangleSurface = nearestTriangle->pMtrl->getDiffuseCoeff(nearestTriangleIntersection);
+
+    // surface = schnittpunkt
+	// eye = kamera
+	// normal = normale
+	// light = lichtquelle
+    // material = material
+
+	//todo:  - variable umbenennen
+
+	Color color = localIllumination(nearestTriangleIntersection, o, nearestTriangle->calcNormal(nearestTriangleIntersection), SceneModel.getLight(0), *nearestTriangle->pMtrl);
+
+	return color;
 
 
-    
-    // 2. Wenn kein Dreieck getroffen wird, gib eine Hintergrundfarbe zurück
-
-	
-    
-    // 3. Berechne die lokale Beleuchtung am Treffpunkt(mit localIllumination)
-    
-    // 4. Falls Reflexion nötig ist und die Rekursionstiefe > 0:
-    
-        // Berechne den reflektierten Strahl
-        
-        // Rufe trace() für diesen Strahl rekursiv auf
-        
-        // Kombiniere die reflektierte Farbe mit der lokalen Beleuchtung
-        
-    // 5. Gib die resultierende Farbe zurück
-
-    
-	
 }
 
