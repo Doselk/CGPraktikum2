@@ -16,15 +16,19 @@ class Material
 {
 public:
     Material();
-    Material(const float& Transmissive);
+
     Material( const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp,  float Reflectivity);
-    Material( const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp,  float Reflectivity, const float& Transmissive);
+
+    Material(const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp, float Reflectivity, float RefractionIndex);
     virtual Color getDiffuseCoeff(const Vector& Pos) const;
     virtual Color getSpecularCoeff(const Vector& Pos) const;
     virtual Color getAmbientCoeff(const Vector& Pos) const;
 	virtual float getTransmissiveIndex(const Vector& Pos) const;
     virtual float getSpecularExp(const Vector& Pos) const;
     virtual float getReflectivity(const Vector& Pos) const;
+	virtual Vector getTransmissiveCoeff(const Vector& Pos) const; //vector für möglichkeit auf farbe
+	virtual float getRefractionIndex(const Vector& Pos) const;
+    
     
 
     static Material DefaultMaterial;
@@ -33,12 +37,15 @@ public:
     static Material BlueMtrl;
     static Material YellowMtrl;
     static Material CyanMtrl;
+	static Material GlassMtrl;
 protected:
     Color m_DiffuseCoeff;
     Color m_SpecularCoeff;
     Color m_AmbientCoeff;
     float m_TransmissiveIndex;
+	Vector m_TransmissiveCoeff;
     float m_SpecularExp;
+    float m_RefractionIndex;
 
     float m_Reflectivity;
 };

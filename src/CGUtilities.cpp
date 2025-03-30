@@ -115,7 +115,14 @@ Material Material::BlueMtrl( Color(0.2f, 0.2f, 0.8f), Color(0.3f,0.3f,0.3f), Col
 Material Material::YellowMtrl( Color(0.8f, 0.8f, 0.2f), Color(0.3f,0.3f,0.3f), Color(0.0,0.0f,0.0f), 16, 0.3f);
 Material Material::CyanMtrl( Color(0.2f, 0.8f, 0.8f), Color(0.3f,0.3f,0.3f), Color(0.0f,0.0f,0.0f), 16, 0.3f);
 
-Material Material::CyanMtrl(Color(0.2f, 0.8f, 0.8f), Color(0.3f, 0.3f, 0.3f), Color(0.0f, 0.0f, 0.0f), 16, 0.3f, );
+Material Material::GlassMtrl(
+    Color(0.1f, 0.1f, 0.1f),    // Diffuse (sehr gering, da transparent)
+    Color(0.9f, 0.9f, 0.9f),    // Specular (hoch für Glanzlichter)
+    Color(0.0f, 0.0f, 0.0f),    // Ambient (kein Umgebungslicht)
+    64.0f,                      // SpecularExp (schärfere Glanzlichter)
+    0.3f,                       // Reflectivity (moderate Spiegelung)
+    1.33f                       // RefractionIndex (Glas)
+);
 
 
 Material::Material()
@@ -127,9 +134,7 @@ Material::Material()
     
 }
 
-Material::Material(const float& Transmissive) {
-    m_TransmissiveIndex = Transmissive;
-}
+
 
 Material::Material(const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp, float Reflectivity)
 {
@@ -140,14 +145,17 @@ Material::Material(const Color& Diffuse, const Color& Specular, const Color& Amb
     m_Reflectivity = Reflectivity;
 }
 
-Material::Material(const Color& Diffuse, const Color& Specular, const Color& Ambient, float SpecularExp, float Reflectivity, const float& Transmissive)
+
+
+Material::Material(const Color& Diffuse, const Color& Specular, const Color& Ambient,
+    float SpecularExp, float Reflectivity, float RefractionIndex)
 {
     m_DiffuseCoeff = Diffuse;
     m_SpecularCoeff = Specular;
     m_AmbientCoeff = Ambient;
     m_SpecularExp = SpecularExp;
     m_Reflectivity = Reflectivity;
-	m_TransmissiveIndex = Transmissive;
+    m_RefractionIndex = RefractionIndex;
 }
 
 float Material::getReflectivity(const Vector& Pos) const
@@ -172,6 +180,21 @@ Color Material::getAmbientCoeff(const Vector& Pos) const
 float Material::getSpecularExp(const Vector& Pos) const
 {
     return m_SpecularExp;
+}
+
+float Material::getTransmissiveIndex(const Vector& Pos) const
+{
+	return m_TransmissiveIndex;
+}
+
+Vector Material::getTransmissiveCoeff(const Vector& Pos) const
+{
+	return Vector(m_TransmissiveIndex, m_TransmissiveIndex, m_TransmissiveIndex);
+}
+
+float Material::getRefractionIndex(const Vector& Pos) const
+{
+    return m_RefractionIndex;
 }
 
 Triangle::Triangle()
