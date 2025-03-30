@@ -162,3 +162,27 @@ bool Vector::triangleIntersection(const Vector& d, const Vector& a, const Vector
 
     return false;
 }
+
+
+
+
+
+
+// Quelle: https://graphics.stanford.edu/courses/cs148-10-summer/docs/2006--degreve--reflection_refraction.pdf
+// Quelle: https://stackoverflow.com/questions/29758545/how-to-find-refraction-vector-from-incoming-vector-and-surface-normal
+
+Vector Vector::refract(const Vector& normal, const Vector& incident, float n1, float n2) const
+{
+	float n = n1 / n2;
+	float cosI = -normal.dot(incident); 
+	float sinT2 = n * n * (1.0f - cosI * cosI);
+
+	if (sinT2 > 1.0f) {
+		return Vector(); // Totalreflexion
+	}
+
+	const float cosT = sqrt(1.0f - sinT2);
+
+
+	return (incident * n) + (normal * (n * cosI - cosT));
+}

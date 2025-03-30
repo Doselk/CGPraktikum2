@@ -27,6 +27,7 @@ public:
     Vector reflection( const Vector& normal) const;
     bool triangleIntersection( const Vector& d, const Vector& a, const Vector& b,
                               const Vector& c, float& s) const;
+    Vector Vector::refract(const Vector& normal, const Vector& incident, float n1, float n2) const;
  };
 
 #endif /* defined(__SimpleRayTracer__vector__) */
